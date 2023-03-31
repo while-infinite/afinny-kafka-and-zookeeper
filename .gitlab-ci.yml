@@ -1,0 +1,28 @@
+stages:
+  - cleanup
+  - deploy
+
+variables:
+  DOCKER_BUILDKIT: 1
+  TRANSFER_METER_FREQUENCY: "2s"
+  GIT_DEPTH: 0
+
+deploy:
+  stage: deploy
+  tags: 
+    - shell-dev
+  
+  script:
+    - docker stop zookeeper || true
+    - docker rm zookeeper || true
+    - docker stop kafka || true
+    - docker rm kafka || true
+    - docker-compose -f docker-compose.yaml up --force-recreate -d
+
+cleanup:
+  stage: cleanup
+  tags:
+    - shell-dev
+  script:
+    - docker system prune -f --filter "label!=keep"
+  when: always
